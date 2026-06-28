@@ -1,0 +1,6 @@
+{
+  "name": "HvhCheat",
+  "tree": {
+    "$path": "src/cheat.client.luau"
+  }
+}
