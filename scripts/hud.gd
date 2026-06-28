@@ -36,42 +36,28 @@ func _ready() -> void:
 	hitmarker.draw.connect(_draw_hitmarker)
 	add_child(hitmarker)
 
-	health_label = _make_label(Vector2(30, -70), HORIZONTAL_ALIGNMENT_LEFT, 34)
-	health_label.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	health_label.position = Vector2(30, get_viewport().get_visible_rect().size.y - 70)
+	var vp := get_viewport().get_visible_rect().size
 
-	ammo_label = _make_label(Vector2(0, 0), HORIZONTAL_ALIGNMENT_RIGHT, 34)
-	ammo_label.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	ammo_label.position = Vector2(-220, get_viewport().get_visible_rect().size.y - 70)
-	ammo_label.size = Vector2(190, 50)
+	health_label = _make_label(Vector2(28, vp.y - 70), Vector2(300, 44), HORIZONTAL_ALIGNMENT_LEFT, 34)
+	ammo_label = _make_label(Vector2(vp.x - 280, vp.y - 70), Vector2(252, 44), HORIZONTAL_ALIGNMENT_RIGHT, 34)
+	weapon_label = _make_label(Vector2(vp.x - 380, vp.y - 104), Vector2(352, 30), HORIZONTAL_ALIGNMENT_RIGHT, 22)
 
-	weapon_label = _make_label(Vector2(0, 0), HORIZONTAL_ALIGNMENT_RIGHT, 22)
-	weapon_label.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	weapon_label.position = Vector2(-320, get_viewport().get_visible_rect().size.y - 105)
-	weapon_label.size = Vector2(290, 30)
-
-	score_label = _make_label(Vector2(0, 14), HORIZONTAL_ALIGNMENT_CENTER, 28)
-	score_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	score_label = _make_label(Vector2(0, 12), Vector2(vp.x, 38), HORIZONTAL_ALIGNMENT_CENTER, 28)
 	score_label.text = "CT  0 : 0  T"
-
-	alive_label = _make_label(Vector2(0, 52), HORIZONTAL_ALIGNMENT_CENTER, 18)
-	alive_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	alive_label = _make_label(Vector2(0, 52), Vector2(vp.x, 26), HORIZONTAL_ALIGNMENT_CENTER, 18)
 	alive_label.text = "alive  CT 5 / T 5"
 
-	message_label = _make_label(Vector2(0, 0), HORIZONTAL_ALIGNMENT_CENTER, 40)
-	message_label.set_anchors_preset(Control.PRESET_CENTER)
-	message_label.position = Vector2(get_viewport().get_visible_rect().size.x * 0.5 - 300, 120)
-	message_label.size = Vector2(600, 60)
+	message_label = _make_label(Vector2(0, vp.y * 0.34), Vector2(vp.x, 64), HORIZONTAL_ALIGNMENT_CENTER, 40)
 	message_label.text = ""
 
-	help_label = _make_label(Vector2(30, 20), HORIZONTAL_ALIGNMENT_LEFT, 16)
-	help_label.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	help_label.text = "WASD move  |  Mouse look  |  LMB fire  |  RMB scope (Scout)\nWheel/1/2 switch weapon  |  R reload  |  Shift walk  |  Ctrl crouch  |  Esc mouse"
+	help_label = _make_label(Vector2(0, vp.y - 34), Vector2(vp.x, 26), HORIZONTAL_ALIGNMENT_CENTER, 15)
+	help_label.text = "WASD move | Mouse look | LMB fire | RMB scope | Wheel/1/2 switch | R reload | Shift walk | Ctrl crouch | Esc mouse"
 
 
-func _make_label(pos: Vector2, align: int, fsize: int) -> Label:
+func _make_label(pos: Vector2, sz: Vector2, align: int, fsize: int) -> Label:
 	var l := Label.new()
 	l.position = pos
+	l.size = sz
 	l.horizontal_alignment = align
 	l.add_theme_font_size_override("font_size", fsize)
 	l.add_theme_color_override("font_color", Color.WHITE)

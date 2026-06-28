@@ -98,13 +98,14 @@ func _normalize_model(model: Node3D, target_height: float) -> void:
 func _model_aabb(node: Node3D) -> AABB:
 	var result := AABB()
 	var first := true
-	var stack: Array = [node]
+	var stack: Array[Node] = [node]
 	while not stack.is_empty():
-		var n = stack.pop_back()
-		if n is MeshInstance3D and n.mesh != null:
-			var box := n.mesh.get_aabb()
+		var n: Node = stack.pop_back()
+		var mi := n as MeshInstance3D
+		if mi != null and mi.mesh != null:
+			var box: AABB = mi.mesh.get_aabb()
 			# transform relative to root node
-			var rel := node.global_transform.affine_inverse() * n.global_transform
+			var rel: Transform3D = node.global_transform.affine_inverse() * mi.global_transform
 			box = rel * box
 			if first:
 				result = box

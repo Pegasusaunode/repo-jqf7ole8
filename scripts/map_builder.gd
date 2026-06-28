@@ -76,12 +76,12 @@ static func _box(parent: Node3D, pos: Vector3, size: Vector3, mat: StandardMater
 
 static func _build_floor(parent: Node3D) -> void:
 	_box(parent, Vector3(0, -0.5, 0), Vector3(HALF * 2.0, 1.0, HALF * 2.0),
-		_texmat("texture_06.png", HALF))
+		_texmat("light_floor.png", HALF))
 
 
 static func _build_walls(parent: Node3D) -> void:
 	var h := 6.0
-	var wall := _texmat("texture_13.png", 8.0)
+	var wall := _texmat("texture_01.png", 8.0)
 	_box(parent, Vector3(0, h * 0.5, -HALF), Vector3(HALF * 2.0 + 2.0, h, 1.0), wall)
 	_box(parent, Vector3(0, h * 0.5, HALF), Vector3(HALF * 2.0 + 2.0, h, 1.0), wall)
 	_box(parent, Vector3(-HALF, h * 0.5, 0), Vector3(1.0, h, HALF * 2.0), wall)
@@ -89,7 +89,7 @@ static func _build_walls(parent: Node3D) -> void:
 
 
 static func _build_cover(parent: Node3D) -> void:
-	var crate := _texmat("texture_09.png", 2.0)
+	var crate := _texmat("orange.png", 1.0)
 	var wall := _texmat("texture_02.png", 3.0)
 	# Mirrored cover layout (CS-style mid + sites).
 	var layout := [
@@ -151,12 +151,13 @@ static func _scale_to_height(node: Node3D, target_h: float) -> void:
 static func _aabb(node: Node3D) -> AABB:
 	var result := AABB()
 	var first := true
-	var stack: Array = [node]
+	var stack: Array[Node] = [node]
 	while not stack.is_empty():
-		var n = stack.pop_back()
-		if n is MeshInstance3D and n.mesh != null:
-			var box: AABB = n.mesh.get_aabb()
-			var rel := node.global_transform.affine_inverse() * n.global_transform
+		var n: Node = stack.pop_back()
+		var mi := n as MeshInstance3D
+		if mi != null and mi.mesh != null:
+			var box: AABB = mi.mesh.get_aabb()
+			var rel: Transform3D = node.global_transform.affine_inverse() * mi.global_transform
 			box = rel * box
 			if first:
 				result = box
