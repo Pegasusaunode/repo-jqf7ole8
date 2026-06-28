@@ -483,7 +483,7 @@ local function addTab(name)
 	page.ScrollBarThickness = 3
 	page.ScrollBarImageColor3 = theme.accent
 	page.CanvasSize = UDim2.new(0, 0, 0, 0)
-	page.AutomaticCanvasSize = Enum.AutomaticCanvasSize.Y
+	page.AutomaticCanvasSize = Enum.AutomaticSize.Y
 	page.Visible = false
 	page.Parent = content
 	local lay = Instance.new("UIListLayout")
