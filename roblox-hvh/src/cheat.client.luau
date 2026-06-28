@@ -232,17 +232,69 @@ local function selectTarget(fovPx)
 	return best
 end
 
---========================================================================
--- 4.  UI  BUILD
---========================================================================
 local theme = Build.theme
+
+--========================================================================
+-- 3b.  BOOT  -  bind the toggle key FIRST + show a visible "loaded" toast,
+--       so the cheat is usable even if something in the UI build errors.
+--========================================================================
+local toggleMenu                  -- assigned by the UI build below
+local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+local function showToast(text, color, life)
+	local tg = Instance.new("ScreenGui")
+	tg.Name = "_boot" .. tostring(rng:NextInteger(100, 999))
+	tg.ResetOnSpawn = false
+	tg.IgnoreGuiInset = true
+	tg.DisplayOrder = 10000
+	tg.Parent = playerGui
+	local l = Instance.new("TextLabel")
+	l.AnchorPoint = Vector2.new(0.5, 0)
+	l.Position = UDim2.new(0.5, 0, 0, 6)
+	l.Size = UDim2.new(0, 380, 0, 24)
+	l.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+	l.BackgroundTransparency = 0.1
+	l.Font = Enum.Font.GothamBold
+	l.TextSize = 13
+	l.TextColor3 = color or theme.accent
+	l.Text = text
+	l.Parent = tg
+	local c = Instance.new("UICorner") c.CornerRadius = UDim.new(0, 6) c.Parent = l
+	if life ~= math.huge then
+		task.delay(life or 5, function() tg:Destroy() end)
+	end
+	return tg, l
+end
+
+showToast(Build.name .. "   loaded  -  press DELETE", theme.accent, 6)
+
+UserInputService.InputBegan:Connect(function(input, gp)
+	if gp then return end
+	if input.KeyCode == Enum.KeyCode.Delete or input.KeyCode == Enum.KeyCode.Insert then
+		if toggleMenu then
+			toggleMenu()
+		else
+			showToast("menu is still loading / failed to build", Color3.fromRGB(255, 180, 60), 3)
+		end
+	elseif input.KeyCode == Enum.KeyCode.Space and F.infJump then
+		local char = getCharacter()
+		local hum = char and char:FindFirstChildOfClass("Humanoid")
+		if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+	end
+end)
+
+--========================================================================
+-- 4.  UI  BUILD  (wrapped in pcall so a failure can't kill the toggle key)
+--========================================================================
+local buildOk, buildErr = pcall(function()
+
 local gui = Instance.new("ScreenGui")
 gui.Name = "_" .. tostring(rng:NextInteger(100000, 999999)) -- obscure-ish name
 gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.IgnoreGuiInset = true
 gui.DisplayOrder = 9999
-gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+gui.Parent = playerGui
 
 local function corner(parent, r)
 	local c = Instance.new("UICorner")
@@ -664,7 +716,7 @@ if Build.watermark then
 	wm.Size = UDim2.new(0, 260, 0, 18)
 	wm.TextXAlignment = Enum.TextXAlignment.Right
 	wm.Font = Enum.Font.GothamBold
-	wm.Visible = false
+	wm.Visible = true
 	task.spawn(function()
 		while wm.Parent do
 			wm.Text = string.format("%s  |  %d fps  |  %s", Build.name,
@@ -696,7 +748,7 @@ local function hideMenu()
 	menuShown = false
 end
 
-local function toggleMenu()
+toggleMenu = function()
 	opened = not opened
 	if opened then
 		if firstOpen then
@@ -710,16 +762,12 @@ local function toggleMenu()
 	end
 end
 
-UserInputService.InputBegan:Connect(function(input, gp)
-	if gp then return end
-	if input.KeyCode == Enum.KeyCode.Delete then
-		toggleMenu()
-	elseif input.KeyCode == Enum.KeyCode.Space and F.infJump then
-		local char = getCharacter()
-		local hum = char and char:FindFirstChildOfClass("Humanoid")
-		if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
-	end
-end)
+end) -- end UI-build pcall
+
+if not buildOk then
+	warn("[HVH] UI build error: " .. tostring(buildErr))
+	showToast("UI error: " .. string.sub(tostring(buildErr), 1, 90), Color3.fromRGB(255, 80, 80), math.huge)
+end
 
 --========================================================================
 -- 7.  COMBAT LOOP  (aimbot / silent / autoshoot)
@@ -1046,7 +1094,6 @@ end)
 --========================================================================
 -- 11.  boot
 --========================================================================
-if wm then wm.Visible = true end
 -- tiny console breadcrumb so the dev can see which build rolled
 print(string.format("[%s] loaded  -  tier=%s  hit=%d%% fov=%d smoothing=%.1f",
 	Build.name, Build.tier.name, math.floor(Build.power.hitChance * 100),
